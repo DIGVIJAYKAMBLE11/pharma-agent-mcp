@@ -16,6 +16,7 @@ import asyncio
 import json
 import statistics
 import time
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 
@@ -27,8 +28,17 @@ def load_questions(path: str | Path) -> list[dict]:
         return [json.loads(line) for line in f if line.strip()]
 
 
+# LLMs often write non-breaking hyphens/spaces (e.g. "DPP‑4"); normalise before matching terms.
+DASHES = dict.fromkeys(map(ord, "-‐‑‒–—−"), " ")
+
+
+def normalise(text: str) -> str:
+    text = unicodedata.normalize("NFKC", text).translate(DASHES)
+    return " ".join(text.lower().split())
+
+
 def answer_text(resp: AskResponse) -> str:
-    return " ".join([resp.answer.answer, *(p.text for p in resp.answer.key_points)]).lower()
+    return normalise(" ".join([resp.answer.answer, *(p.text for p in resp.answer.key_points)]))
 
 
 def score(item: dict, resp: AskResponse) -> dict:
@@ -48,7 +58,7 @@ def score(item: dict, resp: AskResponse) -> dict:
         "source_recall": len(sources & expected_sources) / len(expected_sources) if expected_sources else 1.0,
         "citation_precision": exact / total_citations if total_citations else 0.0,
         "grounded_points": (len(points) - g.unsupported_points) / len(points) if points else 0.0,
-        "term_hit": sum(t.lower() in text for t in terms) / len(terms) if terms else 1.0,
+        "term_hit": sum(normalise(t) in text for t in terms) / len(terms) if terms else 1.0,
         "latency_ms": resp.latency_ms,
     }
 
