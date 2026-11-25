@@ -11,8 +11,9 @@ To add a specialist, add an entry under `agents:` in configs/default.yaml.
 from dataclasses import dataclass, field
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import HumanMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.tools import BaseTool
+from langgraph.errors import GraphRecursionError
 from langgraph.prebuilt import create_react_agent
 
 from ..schemas import Evidence
@@ -35,16 +36,33 @@ class Specialist:
         self.max_steps = max_steps
         self.agent = create_react_agent(llm, tools, prompt=f"{spec.prompt}\n\n{SPECIALIST_RULES}")
 
-    async def run(self, instruction: str) -> tuple[str, list[Evidence], list[dict]]:
-        """Returns (summary text, evidence from every tool call, the tool calls made)."""
-        result = await self.agent.ainvoke(
-            {"messages": [HumanMessage(instruction)]},
-            config={"recursion_limit": self.max_steps},
-        )
-        messages = result["messages"]
+    async def run(self, instruction: str, question: str = "") -> tuple[str, list[Evidence], list[dict]]:
+        """Returns (summary text, evidence from every tool call, the tool calls made).
+
+        The agent gets the user's question as well as the supervisor's instruction: a live run
+        showed the supervisor sometimes drops the drug name from the instruction.
+
+        Steps are streamed, so if the agent hits the step limit we keep the evidence it already
+        found instead of losing it all to the GraphRecursionError.
+        """
+        prompt = f"User question: {question}\nYour task: {instruction}" if question else instruction
+        messages: list = [HumanMessage(prompt)]
+        hit_limit = False
+        try:
+            async for state in self.agent.astream(
+                {"messages": messages}, config={"recursion_limit": self.max_steps}, stream_mode="values"
+            ):
+                messages = state["messages"]
+        except GraphRecursionError:
+            hit_limit = True
         evidence = [e for m in messages if isinstance(m, ToolMessage) for e in parse_evidence(m.content)]
         calls = [{"tool": c["name"], "args": c["args"]} for m in messages for c in getattr(m, "tool_calls", []) or []]
-        return content_to_text(messages[-1].content).strip(), evidence, calls
+        if hit_limit or not isinstance(messages[-1], AIMessage) or messages[-1].tool_calls:
+            text = f"Step limit reached after {len(calls)} tool calls; evidence gathered so far: " + ", ".join(
+                f"[{e.id}] {e.title}" for e in evidence[:8])
+        else:
+            text = content_to_text(messages[-1].content).strip()
+        return text, evidence, calls
 
 
 def build_specialists(

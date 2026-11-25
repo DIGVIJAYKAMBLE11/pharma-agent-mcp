@@ -53,6 +53,7 @@ class GuardrailReport(BaseModel):
     evidence_count: int
     valid_citations: int
     invalid_citations: list[str]
+    repaired_citations: list[str] = Field(default_factory=list)
     unsupported_points: int
 
 

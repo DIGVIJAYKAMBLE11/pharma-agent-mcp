@@ -39,7 +39,8 @@ class PharmaAgent:
         tools = await load_tools(cfg, http)
         llms = llms or build_llms(cfg["llm"])
         specialists = build_specialists(cfg["agents"], tools, llms.specialist, cfg["agent_limits"]["max_steps"])
-        graph = build_graph(llms.supervisor, llms.synthesizer, specialists)
+        graph = build_graph(llms.supervisor, llms.synthesizer, specialists,
+                            structured_method=cfg["llm"].get("structured_output_method", "json_schema"))
         return cls(cfg, store, tools, specialists, graph)
 
     async def run_graph(self, question: str) -> dict:

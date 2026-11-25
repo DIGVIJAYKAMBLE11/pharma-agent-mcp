@@ -40,19 +40,27 @@ class GraphState(TypedDict, total=False):
 
 class SpecialistInput(TypedDict):
     task: Task
+    question: str
 
 
 def unique_evidence(evidence: list[Evidence]) -> list[Evidence]:
     return list({e.id: e for e in evidence}.values())
 
 
-def build_graph(supervisor_llm: BaseChatModel, synthesizer_llm: BaseChatModel, specialists: dict[str, Specialist]):
+def build_graph(
+    supervisor_llm: BaseChatModel,
+    synthesizer_llm: BaseChatModel,
+    specialists: dict[str, Specialist],
+    structured_method: str = "json_schema",
+):
+    """`structured_method="json_schema"`: on Groq, function_calling failed ~1 in 6 routing calls
+    ("model did not call a tool"); json_schema went 6 for 6 in the same test."""
     catalog = "\n".join(f"- {name}: {s.spec.description}" for name, s in specialists.items())
 
     async def supervisor(state: GraphState) -> dict:
         question = state["question"]
         try:
-            plan = await supervisor_llm.with_structured_output(RoutePlan).ainvoke(
+            plan = await supervisor_llm.with_structured_output(RoutePlan, method=structured_method).ainvoke(
                 [SystemMessage(SUPERVISOR.format(catalog=catalog)), HumanMessage(question)]
             )
             tasks = list({t.agent: t for t in plan.tasks if t.agent in specialists}.values())
@@ -66,12 +74,12 @@ def build_graph(supervisor_llm: BaseChatModel, synthesizer_llm: BaseChatModel, s
         return {"plan": RoutePlan(reasoning=reasoning, tasks=tasks)}
 
     def dispatch(state: GraphState) -> list[Send]:
-        return [Send("specialist", {"task": task}) for task in state["plan"].tasks]
+        return [Send("specialist", {"task": task, "question": state["question"]}) for task in state["plan"].tasks]
 
     async def specialist(inp: SpecialistInput) -> dict:
         task = inp["task"]
         try:
-            text, evidence, calls = await specialists[task.agent].run(task.instruction)
+            text, evidence, calls = await specialists[task.agent].run(task.instruction, inp["question"])
         except Exception as exc:  # noqa: BLE001
             log.warning("%s failed: %s", task.agent, exc)
             text, evidence, calls = f"Agent failed: {type(exc).__name__}: {str(exc)[:200]}", [], []
@@ -95,7 +103,7 @@ def build_graph(supervisor_llm: BaseChatModel, synthesizer_llm: BaseChatModel, s
             evidence="\n".join(f"[{e.id}] {e.title}: {e.text[:EXCERPT_CHARS]}" for e in evidence),
         )
         try:
-            answer = await synthesizer_llm.with_structured_output(FinalAnswer).ainvoke([HumanMessage(prompt)])
+            answer = await synthesizer_llm.with_structured_output(FinalAnswer, method=structured_method).ainvoke([HumanMessage(prompt)])
         except Exception as exc:  # noqa: BLE001
             log.warning("synthesizer failed, returning raw findings: %s", exc)
             answer = FinalAnswer(

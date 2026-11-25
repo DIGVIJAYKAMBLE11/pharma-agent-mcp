@@ -5,6 +5,7 @@ llm:
   temperature: 0
   max_retries: 6                 # the Groq SDK waits and retries on 429 "rate limit" replies
   reasoning_effort: low          # gpt-oss models: fewer hidden reasoning tokens = more room in the free tier
+  structured_output_method: json_schema   # function_calling failed ~1 in 6 routing calls on Groq; json_schema 6/6
   # Groq free tier = 8,000 tokens per minute *per model*, so the work is split across two models.
   roles:
     supervisor: openai/gpt-oss-120b    # picks which specialists to call
@@ -48,7 +49,7 @@ agents:
       what the abstracts actually report.
 
 agent_limits:
-  max_steps: 7                   # LangGraph steps per specialist (about 2 tool rounds + the reply)
+  max_steps: 9                   # LangGraph steps per specialist (about 3 tool rounds + the reply)
 
 http:
   timeout: 20

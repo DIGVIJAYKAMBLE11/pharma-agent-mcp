@@ -46,7 +46,7 @@ def build_llms(llm_cfg: dict) -> LLMRoles:
     roles = dict(llm_cfg.get("roles", {}))
     if llm_cfg.get("model"):
         roles = {role: llm_cfg["model"] for role in ("supervisor", "specialist", "synthesizer")}
-    common = {k: v for k, v in llm_cfg.items() if k not in {"provider", "roles", "model"}}
+    common = {k: v for k, v in llm_cfg.items() if k not in {"provider", "roles", "model", "structured_output_method"}}
     cache: dict[str, BaseChatModel] = {}
     built: dict[str, BaseChatModel] = {}
     for role in ("supervisor", "specialist", "synthesizer"):

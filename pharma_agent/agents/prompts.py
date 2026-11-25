@@ -11,6 +11,7 @@ Use the agent names exactly as listed."""
 
 SPECIALIST_RULES = """Rules:
 - Call your tools at most 2 times, with precise arguments (generic drug names work best).
+- Take the drug and condition names from the user question if your task does not repeat them.
 - Then reply with a short factual summary (max 120 words).
 - Put the evidence ids you used in square brackets, e.g. [pmid:12345678] or [nct:NCT01234567].
 - If the tools return nothing useful, say so. Never invent facts or ids."""

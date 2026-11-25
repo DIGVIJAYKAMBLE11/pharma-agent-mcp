@@ -37,6 +37,7 @@ def score(item: dict, resp: AskResponse) -> dict:
     sources = {e.source for e in resp.evidence}
     expected_sources = set(item.get("expected_sources", []))
     g = resp.guardrail
+    exact = g.valid_citations - len(g.repaired_citations)  # repaired ids count as model mistakes
     total_citations = g.valid_citations + len(g.invalid_citations)
     points = resp.answer.key_points
     terms = item.get("expected_terms", [])
@@ -45,7 +46,7 @@ def score(item: dict, resp: AskResponse) -> dict:
         "routing_exact": float(chosen == expected_agents),
         "routing_recall": len(chosen & expected_agents) / len(expected_agents),
         "source_recall": len(sources & expected_sources) / len(expected_sources) if expected_sources else 1.0,
-        "citation_precision": g.valid_citations / total_citations if total_citations else 0.0,
+        "citation_precision": exact / total_citations if total_citations else 0.0,
         "grounded_points": (len(points) - g.unsupported_points) / len(points) if points else 0.0,
         "term_hit": sum(t.lower() in text for t in terms) / len(terms) if terms else 1.0,
         "latency_ms": resp.latency_ms,

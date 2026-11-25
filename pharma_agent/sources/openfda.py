@@ -78,7 +78,7 @@ class OpenFDALabels(DataSource):
         text = " ".join(f"[{f.upper()}] " + " ".join(label[f]) for f in used)
         set_id = label.get("set_id", label.get("id", "unknown"))
         return Evidence(
-            id=f"fda-label:{set_id}:{section}",
+            id=f"fda-label:{set_id[:8]}:{section}",   # short ids: less for the LLM to mis-copy
             source="openfda_labels",
             title=f"FDA label: {brand} ({generic}), {section.replace('_', ' ')}",
             text=clip(text, self.MAX_CHARS),

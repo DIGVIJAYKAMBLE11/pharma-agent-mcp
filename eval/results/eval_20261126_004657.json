@@ -1,0 +1,540 @@
+{
+  "llm": {
+    "provider": "groq",
+    "temperature": 0,
+    "max_retries": 6,
+    "reasoning_effort": "low",
+    "roles": {
+      "supervisor": "openai/gpt-oss-120b",
+      "specialist": "openai/gpt-oss-20b",
+      "synthesizer": "openai/gpt-oss-120b"
+    }
+  },
+  "tool_mode": "direct",
+  "summary": {
+    "questions": 16,
+    "answered": 16,
+    "errors": 0,
+    "routing_exact": 0.875,
+    "routing_recall": 1.0,
+    "source_recall": 0.812,
+    "citation_precision": 0.812,
+    "grounded_points": 0.812,
+    "term_hit": 0.75,
+    "latency_p50_s": 6.5,
+    "latency_p95_s": 33.9
+  },
+  "rows": [
+    {
+      "id": "q01",
+      "question": "Does metformin have a boxed warning, and what is it about?",
+      "run_id": "bc64b5983990",
+      "chosen_agents": [
+        "label_agent",
+        "literature_agent",
+        "trials_agent"
+      ],
+      "expected_agents": [
+        "label_agent"
+      ],
+      "evidence_sources": [
+        "openfda_labels",
+        "pubmed"
+      ],
+      "answer": "Yes. Metformin’s FDA label includes a boxed warning for lactic acidosis, describing that post‑marketing cases have caused death, hypothermia, hypotension, and resistant bradyarrhythmias and that the condition can be fatal.",
+      "confidence": "high",
+      "guardrail": {
+        "evidence_count": 4,
+        "valid_citations": 2,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 0.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 8137.1
+      }
+    },
+    {
+      "id": "q02",
+      "question": "What does the FDA label say about drug interactions with warfarin?",
+      "run_id": "5476e550d021",
+      "chosen_agents": [
+        "label_agent"
+      ],
+      "expected_agents": [
+        "label_agent"
+      ],
+      "evidence_sources": [],
+      "answer": "I could not find evidence in the connected sources to answer this question.",
+      "confidence": "low",
+      "guardrail": {
+        "evidence_count": 0,
+        "valid_citations": 0,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 0.0,
+        "citation_precision": 0.0,
+        "grounded_points": 0.0,
+        "term_hit": 0.0,
+        "latency_ms": 1519.5
+      }
+    },
+    {
+      "id": "q03",
+      "question": "What are the contraindications for apixaban?",
+      "run_id": "e24389ae8686",
+      "chosen_agents": [
+        "label_agent"
+      ],
+      "expected_agents": [
+        "label_agent"
+      ],
+      "evidence_sources": [
+        "openfda_labels"
+      ],
+      "answer": "The FDA label lists two contraindications for apixaban (ELIQUIS): active pathological bleeding and severe hypersensitivity reactions to the drug (such as anaphylaxis).",
+      "confidence": "high",
+      "guardrail": {
+        "evidence_count": 1,
+        "valid_citations": 2,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 5375.8
+      }
+    },
+    {
+      "id": "q04",
+      "question": "What are the most frequently reported adverse events for atorvastatin in FAERS?",
+      "run_id": "c6e82b53cfdf",
+      "chosen_agents": [
+        "label_agent"
+      ],
+      "expected_agents": [
+        "label_agent"
+      ],
+      "evidence_sources": [
+        "openfda_events"
+      ],
+      "answer": "The most frequently reported adverse events for atorvastatin in FAERS are fatigue (14,618 reports), drug ineffective (13,513), nausea (13,086), diarrhoea (11,799), dyspnoea (11,797), type 2 diabetes mellitus (11,285), pain (10,551), headache (10,427), dizziness (10,350) and myalgia (10,091).",
+      "confidence": "high",
+      "guardrail": {
+        "evidence_count": 1,
+        "valid_citations": 10,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 3206.3
+      }
+    },
+    {
+      "id": "q05",
+      "question": "What does the semaglutide label say about use during pregnancy?",
+      "run_id": "85f6856cc777",
+      "chosen_agents": [
+        "label_agent"
+      ],
+      "expected_agents": [
+        "label_agent"
+      ],
+      "evidence_sources": [
+        "openfda_labels"
+      ],
+      "answer": "The label states that semaglutide should be used in pregnancy only if the potential benefit justifies the potential risk to the fetus; animal studies show fetal harm when exposure occurs during organogenesis, and there are limited human data.",
+      "confidence": "medium",
+      "guardrail": {
+        "evidence_count": 2,
+        "valid_citations": 3,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 6013.6
+      }
+    },
+    {
+      "id": "q06",
+      "question": "What is the mechanism of action of sitagliptin according to its label?",
+      "run_id": "ce8237a1860d",
+      "chosen_agents": [
+        "label_agent"
+      ],
+      "expected_agents": [
+        "label_agent"
+      ],
+      "evidence_sources": [
+        "openfda_labels"
+      ],
+      "answer": "Sitagliptin works by inhibiting the enzyme dipeptidyl peptidase‑4 (DPP‑4), which slows the breakdown of the incretin hormones GLP‑1 and GIP. The resulting higher levels of active incretins enhance insulin secretion from pancreatic β‑cells and reduce glucagon release from α‑cells in a glucose‑dependent way, improving glycemic control.",
+      "confidence": "high",
+      "guardrail": {
+        "evidence_count": 1,
+        "valid_citations": 3,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 0.0,
+        "latency_ms": 6382.0
+      }
+    },
+    {
+      "id": "q07",
+      "question": "Find recruiting clinical trials of semaglutide for obesity.",
+      "run_id": "4933f88d8a6e",
+      "chosen_agents": [
+        "trials_agent"
+      ],
+      "expected_agents": [
+        "trials_agent"
+      ],
+      "evidence_sources": [
+        "clinicaltrials"
+      ],
+      "answer": "Current recruiting clinical trials of semaglutide that target obesity include: (1) NCT07732426, a study of semaglutide’s effect on brain dopamine responses to food cues in adults with obesity and food‑addiction tendencies; (2) NCT07253285, a Phase 3 trial comparing semaglutide, cagrilintide and placebo in children and adolescents with excess body weight; (3) NCT07772960, a Phase 1 dose‑response trial of semaglutide (1 mg vs 2 mg) on metabolic, stress‑hormone, craving and alcohol‑use outcomes in obese adults with alcohol‑use disorder; and (4) NCT07770152, a Phase 4 safety and efficacy trial of semaglutide in adolescents (12‑18 y) with autism spectrum disorder and obesity.",
+      "confidence": "high",
+      "guardrail": {
+        "evidence_count": 10,
+        "valid_citations": 4,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 4729.2
+      }
+    },
+    {
+      "id": "q08",
+      "question": "Are there completed phase 3 trials of tirzepatide in type 2 diabetes?",
+      "run_id": "6269951eae66",
+      "chosen_agents": [
+        "trials_agent"
+      ],
+      "expected_agents": [
+        "trials_agent"
+      ],
+      "evidence_sources": [
+        "clinicaltrials"
+      ],
+      "answer": "Yes, there are several completed Phase 3 trials of tirzepatide in type 2 diabetes, including studies comparing it to insulin lispro (NCT04537923), insulin glargine in high‑cardiovascular‑risk patients (NCT03730662), placebo in patients not controlled with diet/exercise (NCT03954834), long‑term safety with oral antihyperglycemics (NCT03861039), and a monotherapy trial in Chinese participants (NCT05963022).",
+      "confidence": "high",
+      "guardrail": {
+        "evidence_count": 10,
+        "valid_citations": 5,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 4522.3
+      }
+    },
+    {
+      "id": "q09",
+      "question": "Which clinical trials are studying pembrolizumab in non-small cell lung cancer?",
+      "run_id": "4cf6a1ce5583",
+      "chosen_agents": [
+        "trials_agent"
+      ],
+      "expected_agents": [
+        "trials_agent"
+      ],
+      "evidence_sources": [
+        "clinicaltrials"
+      ],
+      "answer": "Registered clinical trials studying pembrolizumab in non‑small cell lung cancer (NSCLC) include:\n- NCT06939595 (Phase 3, 225 pts, Celltrion) comparing CT‑P51 with pembrolizumab + platinum‑pemetrexed in untreated metastatic NSCLC.\n- NCT05544929 (Phase 1, 126 pts, Novartis) evaluating KFA115 alone and with pembrolizumab in advanced NSCLC (among other cancers).\n- NCT03257722 (Phase 1/2, 4 pts, terminated) testing pembrolizumab + idelalisib in NSCLC refractory to immune therapy.\n- NCT04533451 (Phase 2, 101 pts, Alliance) assessing pembrolizumab with or without chemotherapy in patients ≥70 y with advanced NSCLC.\n- NCT06902272 (Phase 2, 30 pts, University of Miami) using ctDNA to predict response to pembrolizumab + platinum doublet in NSCLC.\n- NCT05317858 (Phase 3, 96 pts, InSightec) investigating blood‑brain‑barrier opening plus pembrolizumab for NSCLC brain metastases.\n- NCT06579196 (Phase 1/2, 45 pts, University of Nebraska) combining trabedersen with pembrolizumab in newly diagnosed advanced NSCLC.\n- NCT05633602 (Phase 3, 838 pts, SWOG) comparing ramucirumab + pembrolizumab versus standard care in stage IV/recurrent NSCLC.\n- NCT04547504 (Phase 3, 349 pts, University Hospital Brest) comparing chemotherapy‑pembrolizumab versus pembrolizumab alone in first‑line NSCLC with PD‑L1 ≥ 50 %.",
+      "confidence": "high",
+      "guardrail": {
+        "evidence_count": 10,
+        "valid_citations": 9,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 6298.8
+      }
+    },
+    {
+      "id": "q10",
+      "question": "What does published research say about metformin and cancer risk?",
+      "run_id": "8880ac65a998",
+      "chosen_agents": [
+        "label_agent",
+        "literature_agent",
+        "trials_agent"
+      ],
+      "expected_agents": [
+        "literature_agent"
+      ],
+      "evidence_sources": [
+        "clinicaltrials",
+        "openfda_events",
+        "openfda_labels",
+        "pubmed"
+      ],
+      "answer": "Published research indicates that metformin use is associated with a lower overall cancer risk in patients with type 2 diabetes, with meta‑analyses reporting roughly a 20–30 % relative risk reduction for incident cancers and modest reductions for specific sites such as lung cancer. Observational cohort data drive these findings, while randomized trials are few and ongoing, so definitive causal evidence is still lacking. The FDA label does not mention cancer risk, and spontaneous FAERS reports cannot establish causation.",
+      "confidence": "medium",
+      "guardrail": {
+        "evidence_count": 10,
+        "valid_citations": 7,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 0.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 6781.6
+      }
+    },
+    {
+      "id": "q11",
+      "question": "Summarise the published evidence on SGLT2 inhibitors and heart failure outcomes.",
+      "run_id": "3eb2494899df",
+      "chosen_agents": [
+        "literature_agent"
+      ],
+      "expected_agents": [
+        "literature_agent"
+      ],
+      "evidence_sources": [],
+      "answer": "I could not find evidence in the connected sources to answer this question.",
+      "confidence": "low",
+      "guardrail": {
+        "evidence_count": 0,
+        "valid_citations": 0,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 0.0,
+        "citation_precision": 0.0,
+        "grounded_points": 0.0,
+        "term_hit": 0.0,
+        "latency_ms": 9092.6
+      }
+    },
+    {
+      "id": "q12",
+      "question": "What do PubMed studies report about statin-associated muscle symptoms?",
+      "run_id": "af0d67218e7c",
+      "chosen_agents": [
+        "literature_agent"
+      ],
+      "expected_agents": [
+        "literature_agent"
+      ],
+      "evidence_sources": [
+        "pubmed"
+      ],
+      "answer": "PubMed studies report that statin‑associated muscle symptoms (SAMS) affect roughly 10–25 % of patients and are the leading cause of statin discontinuation; incidence is higher in older adults, women, those with low baseline LDL‑C, renal impairment, or concurrent CYP3A4 inhibitors. Proposed mechanisms include reduced coenzyme Q10 synthesis, mitochondrial dysfunction, altered calcium handling, and genetic variants such as SLCO1B1, HMGCR, and CYP3A4. Clinical presentations range from mild myalgia to severe rhabdomyolysis, and management strategies involve dose reduction, switching statins, intermittent dosing, or adding non‑statin agents like ezetimibe or PCSK9 inhibitors.",
+      "confidence": "high",
+      "guardrail": {
+        "evidence_count": 5,
+        "valid_citations": 5,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 6537.6
+      }
+    },
+    {
+      "id": "q13",
+      "question": "What are the main safety warnings for empagliflozin, and are there ongoing trials of it in chronic kidney disease?",
+      "run_id": "020417d04388",
+      "chosen_agents": [
+        "label_agent",
+        "trials_agent"
+      ],
+      "expected_agents": [
+        "label_agent",
+        "trials_agent"
+      ],
+      "evidence_sources": [
+        "clinicaltrials",
+        "openfda_events",
+        "openfda_labels"
+      ],
+      "answer": "The FDA label for empagliflozin includes a boxed warning for lactic acidosis and warnings for hypotension/orthostatic hypotension, genital mycotic and urinary tract infections, diabetic ketoacidosis, increased risk of lower‑extremity amputation and bone fracture, renal impairment, and pregnancy considerations; FAERS data show diabetic ketoacidosis, nausea, hyperglycaemia, diarrhoea and weight loss as the most frequently reported adverse events (though these are spontaneous reports, not proven causation). Ongoing clinical trials in chronic kidney disease include early‑phase pediatric feasibility (NCT06430684), phase IV studies in African‑American veterans with non‑diabetic CKD (NCT06110130) and diabetic kidney disease (NCT07155694), a phase II vascular effects study (NCT07060417), and phase III/IV trials in dialysis and peritoneal dialysis populations (NCT06249932, NCT05715814).",
+      "confidence": "high",
+      "guardrail": {
+        "evidence_count": 12,
+        "valid_citations": 8,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 17401.8
+      }
+    },
+    {
+      "id": "q14",
+      "question": "What does the atorvastatin label say about muscle side effects, and what does the literature say about statin myopathy?",
+      "run_id": "1b47816e0bf3",
+      "chosen_agents": [
+        "label_agent",
+        "literature_agent"
+      ],
+      "expected_agents": [
+        "label_agent",
+        "literature_agent"
+      ],
+      "evidence_sources": [],
+      "answer": "I could not find evidence in the connected sources to answer this question.",
+      "confidence": "low",
+      "guardrail": {
+        "evidence_count": 0,
+        "valid_citations": 0,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 0.0,
+        "citation_precision": 0.0,
+        "grounded_points": 0.0,
+        "term_hit": 0.0,
+        "latency_ms": 29723.4
+      }
+    },
+    {
+      "id": "q15",
+      "question": "Is metformin being tested for polycystic ovary syndrome, and what does research say about its benefit there?",
+      "run_id": "57d6c5c64096",
+      "chosen_agents": [
+        "literature_agent",
+        "trials_agent"
+      ],
+      "expected_agents": [
+        "trials_agent",
+        "literature_agent"
+      ],
+      "evidence_sources": [
+        "clinicaltrials",
+        "pubmed"
+      ],
+      "answer": "Yes, metformin is being tested in multiple registered clinical trials for polycystic ovary syndrome (PCOS), and systematic‑review evidence shows it improves metabolic and reproductive outcomes such as insulin resistance, hyperandrogenism, ovulation and menstrual regularity.",
+      "confidence": "high",
+      "guardrail": {
+        "evidence_count": 13,
+        "valid_citations": 11,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 17149.3
+      }
+    },
+    {
+      "id": "q16",
+      "question": "Give a safety overview of adalimumab: its boxed warning, its most reported adverse events in FAERS, and recruiting trials.",
+      "run_id": "e228ade40279",
+      "chosen_agents": [
+        "label_agent",
+        "trials_agent"
+      ],
+      "expected_agents": [
+        "label_agent",
+        "trials_agent"
+      ],
+      "evidence_sources": [
+        "clinicaltrials",
+        "openfda_events",
+        "openfda_labels"
+      ],
+      "answer": "Adalimumab’s FDA label includes a boxed warning for serious infections (including tuberculosis, invasive fungal, and opportunistic infections) and malignancy, especially when used with other immunosuppressants; therapy should be stopped if a serious infection or sepsis occurs. The most frequently reported adverse events in the FAERS database are drug ineffective (93,629 reports), pain (51,249), arthralgia (50,159), injection‑site pain (48,249) and fatigue (41,107), but these are spontaneous reports and do not prove causation. Currently recruiting trials are evaluating adalimumab alone or with other agents in Crohn’s disease, ulcerative colitis, psoriatic arthritis, and juvenile psoriatic arthritis, including NCT05040464, NCT07694674, NCT07510191, NCT07486843, NCT06100744, and NCT04183608.",
+      "confidence": "high",
+      "guardrail": {
+        "evidence_count": 12,
+        "valid_citations": 8,
+        "invalid_citations": [],
+        "unsupported_points": 0
+      },
+      "scores": {
+        "routing_exact": 1.0,
+        "routing_recall": 1.0,
+        "source_recall": 1.0,
+        "citation_precision": 1.0,
+        "grounded_points": 1.0,
+        "term_hit": 1.0,
+        "latency_ms": 33879.8
+      }
+    }
+  ]
+}
