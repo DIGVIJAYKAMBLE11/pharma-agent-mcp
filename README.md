@@ -7,7 +7,7 @@ its source**, and a **guardrail removes any citation a tool did not actually ret
 The tools are also served by an **MCP server**, so any MCP client (Claude Desktop, Cursor, other agents)
 can use them.
 
-* LLMs: **Groq free tier only** (`openai/gpt-oss-120b` + `openai/gpt-oss-20b`)
+* LLMs: **Groq free tier only** (`openai/gpt-oss-120b` + `openai/gpt-oss-20b`, with `qwen/qwen3.8-27b` as a rate-limit fallback)
 * Data: free public APIs; no keys needed
 * Every test runs on the **real** Groq models and the **live** APIs; nothing is mocked
 
@@ -29,7 +29,7 @@ copy .env.example .env                                  # then paste your free k
 python -m pharma_agent ask "Does metformin have a boxed warning, and are there recruiting trials of metformin in cancer?"
 python -m pharma_agent ask "What are the most reported adverse events for atorvastatin?" --mode mcp
 uvicorn pharma_agent.api:app --port 8000                # then open http://localhost:8000/docs
-pytest -q                                               # 22 tests, real Groq + live APIs
+pytest -q                                               # 24 tests, real Groq + live APIs
 python -m pharma_agent eval                             # 16-question evaluation -> eval/results/
 ```
 
@@ -88,24 +88,45 @@ notebooks/             the five notebooks above
 
 ## Staying inside the Groq free tier
 
-The free tier allows about 1,000 requests/day and 8,000 tokens per minute **per model**. The project:
-* splits roles across two models, so each has its own per-minute budget
-* uses `reasoning_effort: low` for gpt-oss models, clips tool outputs and caps each agent at 2 tool rounds
+Per model, the free tier allows about 1,000 requests/day, 8,000 tokens/minute and **200,000 tokens/day**. The project:
+* splits roles across two models, so each has its own per-minute and per-day budget
+* uses `reasoning_effort: low` for gpt-oss models, clips tool outputs and caps each agent at a few tool rounds
 * lets the Groq SDK wait and retry on 429 responses (`max_retries: 6`)
+* **falls back to another model** when one is rate-limited (`llm.fallbacks`: `qwen/qwen3.8-27b`, then
+  `gpt-oss-120b`). It switches only on `groq.RateLimitError`; any other error still surfaces
 * pauses between evaluation questions (`eval.delay_seconds`)
 
 ## Evaluation
 
-`python -m pharma_agent eval` runs `eval/questions.jsonl` on the live models and writes a JSON report to
-`eval/results/`. Metrics: routing accuracy, source recall, citation precision (before the guardrail),
-grounded key points, expected-term hit rate, and p50/p95 latency. See notebook 04 for the latest numbers.
+`python -m pharma_agent eval` runs `eval/questions.jsonl` (16 questions: 10 single-agent, 6 multi-agent) on the
+live Groq models and writes a JSON report to `eval/results/`.
+
+| Metric | Baseline run (`eval_20261126_004657`) | After fixes (`eval_20261126_010042_rescored`) |
+|---|---|---|
+| Questions answered, no crash | 16 / 16 | 16 / 16 |
+| Routing: exactly the right agents | 87.5% | **100%** |
+| Source recall: expected sources returned evidence | 81% | **100%** |
+| Citation precision: cited ids were real evidence (before the guardrail; repaired ids count as errors) | 81% | **100%** |
+| Grounded key points: at least one valid citation | 81% | **100%** |
+| Expected key terms in the answer | 75% | **100%** |
+| Latency p50 / p95 | 6.5 s / 33.9 s | 5.9 s / 43.3 s |
+
+`_rescored` = the same model outputs, re-scored from the SQLite run log after two scorer fixes (Unicode
+hyphens in term matching; one wrong answer-key term). Both reports are committed. `evaluation.rescore()`
+does this without calling any LLM. Caveat: 16 questions is a small set, and key-term matching is a light check.
 
 ## What real-model testing caught
 
-The first live run answered "metformin has no boxed warning". It does (lactic acidosis). The label tool
-had picked an older generic label without a separate `boxed_warning` field. The tool now prefers labels
-that have the requested section's primary field and always puts the boxed warning first; a live test
-(`test_label_returns_the_boxed_warning`) guards against the regression.
+Every one of these was found by running the real Groq models, then fixed and guarded by a test:
+
+| Symptom (live) | Cause | Fix |
+|---|---|---|
+| "Metformin has no boxed warning" (it does: lactic acidosis) | label tool picked an old-format label with no `boxed_warning` field | prefer labels with the section's primary field; boxed warning first |
+| label agent replied "which drug?" | supervisor's instruction dropped the drug name | specialists also receive the user's question |
+| agents returned no evidence | step limit raised an error that discarded the evidence already gathered | stream agent steps, keep partial evidence |
+| supervisor fell back to "all agents" on 1 in 6 calls | Groq function-calling: "model did not call a tool" | structured output via `json_schema` (6/6 in the same test) |
+| valid answers cited "fda-label:0230a3c3" | model dropped the `:warnings` suffix of the id | shorter ids; guardrail repairs a prefix of exactly one real id |
+| agents failed mid-evaluation | gpt-oss-20b hit the 200k tokens/day free cap | rate-limit fallback to other Groq models |
 
 ## Limits
 
