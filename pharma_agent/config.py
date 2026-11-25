@@ -2,7 +2,7 @@
 
 The config is a plain dict so it is easy to print, copy and tweak in a notebook:
 
-    cfg = load_config(overrides={"llm.provider": "fake"})
+    cfg = load_config(overrides={"tools.mode": "mcp"})
 """
 
 import copy

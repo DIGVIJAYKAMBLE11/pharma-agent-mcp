@@ -1,7 +1,7 @@
 # PharmaAgent configuration. Environment variables can override some keys (see pharma_agent/config.py).
 
 llm:
-  provider: groq                 # groq (free tier) | fake (offline, deterministic; for tests and demos)
+  provider: groq                 # Groq free tier (the only provider used)
   temperature: 0
   max_retries: 6                 # the Groq SDK waits and retries on 429 "rate limit" replies
   reasoning_effort: low          # gpt-oss models: fewer hidden reasoning tokens = more room in the free tier

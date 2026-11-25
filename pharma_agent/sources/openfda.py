@@ -57,8 +57,12 @@ class OpenFDALabels(DataSource):
             return []
         fields = LABEL_SECTIONS[section]
         labels = [lab for lab in res.json().get("results", []) if any(lab.get(f) for f in fields)]
-        # Prefer single-ingredient products, then the most recently updated label.
+        # Prefer labels that have the section's primary field (e.g. a boxed warning), then
+        # single-ingredient products, then the most recently updated label. Old-format generic
+        # labels can lack a separate boxed_warning field, which once made the agent claim
+        # "metformin has no boxed warning" (it does: lactic acidosis).
         labels.sort(key=lambda lab: (
+            next(i for i, f in enumerate(fields) if lab.get(f)),
             len(lab.get("openfda", {}).get("substance_name") or ["?"] * 9),
             -int(lab.get("effective_time") or 0),
         ))
@@ -68,16 +72,20 @@ class OpenFDALabels(DataSource):
         meta = label.get("openfda", {})
         brand = ", ".join(meta.get("brand_name", [])[:2]) or "unknown brand"
         generic = ", ".join(meta.get("generic_name", [])[:1]) or "unknown generic"
-        field = next(f for f in fields if label.get(f))
+        present = [f for f in fields if label.get(f)]
+        # For warnings, keep the boxed warning AND the warnings text, clearly labelled.
+        used = present if section == "warnings" else present[:1]
+        text = " ".join(f"[{f.upper()}] " + " ".join(label[f]) for f in used)
         set_id = label.get("set_id", label.get("id", "unknown"))
         return Evidence(
             id=f"fda-label:{set_id}:{section}",
             source="openfda_labels",
             title=f"FDA label: {brand} ({generic}), {section.replace('_', ' ')}",
-            text=clip(" ".join(label[field]), self.MAX_CHARS),
+            text=clip(text, self.MAX_CHARS),
             url=f"https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid={set_id}",
             metadata={
-                "label_field": field,
+                "label_fields": used,
+                "has_boxed_warning": bool(label.get("boxed_warning")),
                 "effective_time": label.get("effective_time"),
                 "manufacturer": (meta.get("manufacturer_name") or [None])[0],
             },
