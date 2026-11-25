@@ -1,0 +1,28 @@
+# Two services from one image:
+#   mcp  the MCP tool server over streamable HTTP (any MCP client can use it, on :8765/mcp)
+#   api  FastAPI + LangGraph agents, getting their tools from the mcp service
+#
+#   docker compose up --build        then open http://localhost:8000/docs
+services:
+  mcp:
+    build: .
+    command: ["python", "-m", "pharma_agent.mcp_server", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8765"]
+    environment:
+      PHARMA_STORE_PATH: /app/data/mcp_cache.db
+    ports: ["8765:8765"]
+    volumes: [pharma-data:/app/data]
+
+  api:
+    build: .
+    depends_on: [mcp]
+    env_file: .env                     # GROQ_API_KEY lives here (never committed)
+    environment:
+      PHARMA_TOOL_MODE: mcp
+      PHARMA_MCP_TRANSPORT: streamable_http
+      PHARMA_MCP_URL: http://mcp:8765/mcp
+      PHARMA_STORE_PATH: /app/data/pharma_agent.db
+    ports: ["8000:8000"]
+    volumes: [pharma-data:/app/data]
+
+volumes:
+  pharma-data:

@@ -1,0 +1,60 @@
+# Minimal Kubernetes deployment: the MCP tool server and the API as two Deployments + Services.
+#
+#   docker build -t pharma-agent:0.1.0 .
+#   kubectl create secret generic groq --from-literal=GROQ_API_KEY=<your key>
+#   kubectl apply -f k8s/pharma-agent.yaml
+#   kubectl port-forward svc/pharma-api 8000:8000
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: pharma-mcp, labels: {app: pharma-mcp}}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: pharma-mcp}}
+  template:
+    metadata: {labels: {app: pharma-mcp}}
+    spec:
+      containers:
+        - name: mcp
+          image: pharma-agent:0.1.0
+          command: ["python", "-m", "pharma_agent.mcp_server", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "8765"]
+          env: [{name: PHARMA_STORE_PATH, value: /tmp/mcp_cache.db}]
+          ports: [{containerPort: 8765}]
+          resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: 500m, memory: 512Mi}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: pharma-mcp}
+spec:
+  selector: {app: pharma-mcp}
+  ports: [{port: 8765, targetPort: 8765}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: pharma-api, labels: {app: pharma-api}}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: pharma-api}}
+  template:
+    metadata: {labels: {app: pharma-api}}
+    spec:
+      containers:
+        - name: api
+          image: pharma-agent:0.1.0
+          env:
+            - {name: PHARMA_TOOL_MODE, value: mcp}
+            - {name: PHARMA_MCP_TRANSPORT, value: streamable_http}
+            - {name: PHARMA_MCP_URL, value: "http://pharma-mcp:8765/mcp"}
+            - {name: PHARMA_STORE_PATH, value: /tmp/pharma_agent.db}
+            - name: GROQ_API_KEY
+              valueFrom: {secretKeyRef: {name: groq, key: GROQ_API_KEY}}
+          ports: [{containerPort: 8000}]
+          readinessProbe: {httpGet: {path: /health, port: 8000}, initialDelaySeconds: 5, periodSeconds: 10}
+          livenessProbe: {httpGet: {path: /health, port: 8000}, initialDelaySeconds: 15, periodSeconds: 30}
+          resources: {requests: {cpu: 200m, memory: 512Mi}, limits: {cpu: "1", memory: 1Gi}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: pharma-api}
+spec:
+  selector: {app: pharma-api}
+  ports: [{port: 8000, targetPort: 8000}]
