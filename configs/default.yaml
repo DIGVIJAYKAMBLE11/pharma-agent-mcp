@@ -11,6 +11,9 @@ llm:
     supervisor: openai/gpt-oss-120b    # picks which specialists to call
     specialist: openai/gpt-oss-20b     # tool-calling agents (most of the tokens)
     synthesizer: openai/gpt-oss-120b   # writes the final cited answer
+  # Each model also has a free daily cap (200k tokens for gpt-oss). On a rate-limit error the
+  # call moves to the next model here (skipping the role's own model). Both support tools + JSON schema.
+  fallbacks: [qwen/qwen3.8-27b, openai/gpt-oss-120b]
 
 tools:
   mode: direct                   # direct: tools run in-process | mcp: tools come from the MCP server

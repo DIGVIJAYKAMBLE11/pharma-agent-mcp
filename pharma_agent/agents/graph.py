@@ -14,7 +14,7 @@ import logging
 import operator
 from typing import Annotated, TypedDict
 
-from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.runnables import Runnable
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
@@ -48,8 +48,8 @@ def unique_evidence(evidence: list[Evidence]) -> list[Evidence]:
 
 
 def build_graph(
-    supervisor_llm: BaseChatModel,
-    synthesizer_llm: BaseChatModel,
+    supervisor_llm: Runnable,
+    synthesizer_llm: Runnable,
     specialists: dict[str, Specialist],
     structured_method: str = "json_schema",
 ):

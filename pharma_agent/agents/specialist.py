@@ -10,7 +10,7 @@ To add a specialist, add an entry under `agents:` in configs/default.yaml.
 
 from dataclasses import dataclass, field
 
-from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.runnables import Runnable
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.tools import BaseTool
 from langgraph.errors import GraphRecursionError
@@ -30,7 +30,7 @@ class SpecialistSpec:
 
 
 class Specialist:
-    def __init__(self, spec: SpecialistSpec, llm: BaseChatModel, tools: list[BaseTool], max_steps: int = 7):
+    def __init__(self, spec: SpecialistSpec, llm: Runnable, tools: list[BaseTool], max_steps: int = 7):
         self.spec = spec
         self.tools = tools
         self.max_steps = max_steps
@@ -66,7 +66,7 @@ class Specialist:
 
 
 def build_specialists(
-    agent_cfgs: dict, tools: list[BaseTool], llm: BaseChatModel, max_steps: int = 7
+    agent_cfgs: dict, tools: list[BaseTool], llm: Runnable, max_steps: int = 7
 ) -> dict[str, Specialist]:
     by_name = {t.name: t for t in tools}
     specialists = {}

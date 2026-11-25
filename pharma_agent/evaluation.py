@@ -112,3 +112,31 @@ def save_report(report: dict, results_dir: str | Path, cfg: dict) -> Path:
     tmp.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
     tmp.replace(path)  # atomic rename: a half-written report never appears
     return path
+
+
+def rescore(report_path: str | Path, store, questions: list[dict]) -> dict:
+    """Re-score a saved report from the answers in the SQLite run log, without calling any LLM.
+
+    Use it when the *scorer* or the answer key changes; the model outputs stay exactly as they were.
+    """
+    from .schemas import FinalAnswer, GuardrailReport, RoutePlan
+
+    old = json.loads(Path(report_path).read_text(encoding="utf-8"))
+    by_id = {q["id"]: q for q in questions}
+    rows = []
+    for row in old["rows"]:
+        run = store.get_run(row["run_id"]) if "run_id" in row else None
+        if run is None:
+            rows.append(row)
+            continue
+        resp = AskResponse(
+            run_id=run["id"], question=run["question"], answer=FinalAnswer(**run["answer"]),
+            plan=RoutePlan(**run["plan"]), findings=[], evidence=run["evidence"],
+            guardrail=GuardrailReport(**run["guardrail"]), latency_ms=run["latency_ms"],
+        )
+        rows.append({**row, "scores": score(by_id[row["id"]], resp)})
+    return {
+        "llm": old.get("llm"), "tool_mode": old.get("tool_mode"),
+        "rescored_from": Path(report_path).name,
+        "summary": summarise(rows), "rows": rows,
+    }
