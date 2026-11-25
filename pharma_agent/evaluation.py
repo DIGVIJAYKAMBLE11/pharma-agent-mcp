@@ -28,7 +28,8 @@ def load_questions(path: str | Path) -> list[dict]:
         return [json.loads(line) for line in f if line.strip()]
 
 
-# LLMs often write non-breaking hyphens/spaces (e.g. "DPP‑4"); normalise before matching terms.
+# LLMs write non-breaking hyphens/spaces ("DPP‑4", "heart‑failure"). Normalise the answer and the
+# expected term the same way: NFKC, then every dash or hyphen becomes a space.
 DASHES = dict.fromkeys(map(ord, "-‐‑‒–—−"), " ")
 
 
