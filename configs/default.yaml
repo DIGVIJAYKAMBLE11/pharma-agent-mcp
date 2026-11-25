@@ -1,0 +1,65 @@
+# PharmaAgent configuration. Environment variables can override some keys (see pharma_agent/config.py).
+
+llm:
+  provider: groq                 # groq (free tier) | fake (offline, deterministic; for tests and demos)
+  temperature: 0
+  max_retries: 6                 # the Groq SDK waits and retries on 429 "rate limit" replies
+  reasoning_effort: low          # gpt-oss models: fewer hidden reasoning tokens = more room in the free tier
+  # Groq free tier = 8,000 tokens per minute *per model*, so the work is split across two models.
+  roles:
+    supervisor: openai/gpt-oss-120b    # picks which specialists to call
+    specialist: openai/gpt-oss-20b     # tool-calling agents (most of the tokens)
+    synthesizer: openai/gpt-oss-120b   # writes the final cited answer
+
+tools:
+  mode: direct                   # direct: tools run in-process | mcp: tools come from the MCP server
+  mcp:
+    transport: stdio             # stdio: spawn the server | streamable_http: connect to a running server
+    url: http://localhost:8765/mcp
+
+# Data sources to load (names from the SOURCES registry). Each becomes one tool.
+sources: [openfda_labels, openfda_events, clinicaltrials, pubmed]
+
+# Specialist agents. Add one by adding an entry: no code change needed.
+agents:
+  label_agent:
+    description: >-
+      Official FDA drug labels (indications, dosage, contraindications, boxed warnings,
+      adverse reactions, drug interactions, pregnancy, mechanism) and FAERS adverse-event report counts.
+    tools: [search_drug_labels, get_adverse_event_counts]
+    prompt: >-
+      You are a regulatory pharmacist. Answer from the official FDA label; use FAERS counts
+      only for "most reported" questions and say they are reports, not proof of causation.
+  trials_agent:
+    description: >-
+      Registered clinical studies on ClinicalTrials.gov: what is being tested, phase, status,
+      enrollment and sponsor, for a drug and/or condition.
+    tools: [search_clinical_trials]
+    prompt: >-
+      You are a clinical-trials analyst. Search by drug and/or condition and report NCT ids,
+      phases, status and what each study tests.
+  literature_agent:
+    description: >-
+      Published biomedical research on PubMed: mechanisms, comparative effectiveness,
+      safety signals and reviews.
+    tools: [search_pubmed]
+    prompt: >-
+      You are a medical literature reviewer. Search PubMed with precise terms and summarise
+      what the abstracts actually report.
+
+agent_limits:
+  max_steps: 7                   # LangGraph steps per specialist (about 2 tool rounds + the reply)
+
+http:
+  timeout: 20
+  retries: 3
+  backoff: 1.0
+  cache: true                    # cache API responses in the SQLite store (saves calls and time)
+
+store:
+  path: data/pharma_agent.db
+
+eval:
+  questions: eval/questions.jsonl
+  results_dir: eval/results
+  delay_seconds: 20              # pause between questions to stay under the free-tier token rate
